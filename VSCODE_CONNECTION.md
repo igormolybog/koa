@@ -26,32 +26,6 @@ Host koa-compute
 > On **Windows**, you may need to use `%%N` instead of `%N` in the `ProxyCommand` if using the built-in OpenSSH client, as `%` is a special character.
 > Replace `<your-cluster-username>` with your actual cluster username (e.g., `molybog`).
 
-### B) Fix `noexec` home by moving the remote server dir to an executable filesystem
-
-Cluster home directories are often mounted with `noexec`, which prevents IDE servers from running. Move the server directory to `/var/tmp` and symlink it.
-
-1. SSH to the cluster login endpoint:
-```bash
-ssh koa
-```
-
-2. Create an exec-backed server directory in `/var/tmp` and symlink the expected path in `$HOME`:
-
-Replace `.<editor>-server` with the directory specific to your IDE:
-- **VS Code**: `.vscode-server`
-- **Cursor**: `.cursor-server`
-- **Windsurf**: `.windsurf-server`
-- **Antigravity**: `.antigravity-server`
-
-```bash
-# Example for Antigravity (replace .antigravity-server if using a different IDE)
-export EDITOR_SERVER=".antigravity-server" 
-rm -rf ~/$EDITOR_SERVER
-mkdir -p /var/tmp/$USER/$EDITOR_SERVER
-chmod 700 /var/tmp/$USER /var/tmp/$USER/$EDITOR_SERVER
-ln -s /var/tmp/$USER/$EDITOR_SERVER ~/$EDITOR_SERVER
-ls -ld ~/$EDITOR_SERVER
-```
 
 ---
 
@@ -71,8 +45,6 @@ Request an interactive allocation:
 # Replace <partition> and <time> as needed.
 # Example: -p sandbox -t 04:00:00 (Max 4h for sandbox)
 salloc -p <partition> -t <time>
-srun --pty bash
-hostname
 ```
 
 > [!IMPORTANT]
@@ -92,5 +64,32 @@ This will:
 * Jump through the `koa` login node.
 * Land on your active compute node allocated by SLURM.
 
+
 You will need to go through a two-factor authentication process, possibly answer a question (yes), and input your password once again, to connect to the cluster. 
+
+### 3) (Optional) Check for `noexec` issues
+
+Most users can skip this step. The IDE server will install directly into your home directory (`~/.antigravity-server`), which is shared across all nodes. 
+
+**Only** follow the "Troubleshooting" section below if you specifically encounter errors related to `noexec` or permission denied when starting the server. This typically happens if you are trying to set up connnection to a login node instead of a compute node.
+
+## Troubleshooting
+
+### "Permission denied" or "Server failed to start" (noexec home)
+
+If your home directory is mounted with `noexec`, the server installation will fail. You can workaround this by using `/var/tmp`, but **be accessible**: `/var/tmp` is node-local!
+
+1. **On the login node (`koa`)**, create a symlink from `$HOME` to `/var/tmp`:
+   ```bash
+   ssh koa
+   export EDITOR_SERVER=".antigravity-server" 
+   rm -rf ~/$EDITOR_SERVER
+   ln -s /var/tmp/$USER/$EDITOR_SERVER ~/$EDITOR_SERVER
+   ```
+
+2. **Every time you connect to a NEW compute node**, you must create the directory:
+   ```bash
+   # On the compute node
+   mkdir -p /var/tmp/$USER/.antigravity-server && chmod 700 /var/tmp/$USER /var/tmp/$USER/.antigravity-server
+   ```
 
