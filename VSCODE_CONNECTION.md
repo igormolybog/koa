@@ -26,11 +26,6 @@ Host koa-compute
 > On **Windows**, you may need to use `%%N` instead of `%N` in the `ProxyCommand` if using the built-in OpenSSH client, as `%` is a special character.
 > Replace `<your-cluster-username>` with your actual cluster username (e.g., `molybog`).
 
-### B) (Optional) Check for `noexec` issues
-
-Most users can skip this step. The IDE server will install directly into your home directory (`~/.antigravity-server`), which is shared across all nodes. 
-
-**Only** follow the "Troubleshooting" section below if you specifically encounter errors related to `noexec` or permission denied when starting the server.
 
 ---
 
@@ -44,9 +39,12 @@ From the login environment:
 ssh koa
 ```
 
-Hostname:
+Request an interactive allocation:
+
 ```bash
-hostname
+# Replace <partition> and <time> as needed.
+# Example: -p sandbox -t 04:00:00 (Max 4h for sandbox)
+salloc -p <partition> -t <time>
 ```
 
 > [!IMPORTANT]
@@ -68,6 +66,12 @@ This will:
 
 
 You will need to go through a two-factor authentication process, possibly answer a question (yes), and input your password once again, to connect to the cluster. 
+
+### 3) (Optional) Check for `noexec` issues
+
+Most users can skip this step. The IDE server will install directly into your home directory (`~/.antigravity-server`), which is shared across all nodes. 
+
+**Only** follow the "Troubleshooting" section below if you specifically encounter errors related to `noexec` or permission denied when starting the server. This typically happens if you are trying to set up connnection to a login node instead of a compute node.
 
 ## Troubleshooting
 
