@@ -246,7 +246,8 @@ def load_config(
     else:
         local_root = Path("./runs").resolve()
 
-    remote_project_root = (remote_root / "projects" / project_name).resolve()
+    # Keep remote paths lexical; resolve() on macOS rewrites /home/... to /System/Volumes/Data/home/...
+    remote_project_root = remote_root / "projects" / project_name
     remote_jobs_root = remote_project_root / "jobs"
     remote_env_dir = remote_project_root / ".venv"
     local_project_root = (local_root / "projects" / project_name).resolve()

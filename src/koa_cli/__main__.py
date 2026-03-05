@@ -776,7 +776,8 @@ def _init_project(args: argparse.Namespace) -> int:
         executable=True,
     )
 
-    remote_project_root = (remote_root / "projects" / project_name).resolve()
+    # Keep remote paths lexical; resolve() on macOS rewrites /home/... to /System/Volumes/Data/home/...
+    remote_project_root = remote_root / "projects" / project_name
     local_project_root = (local_root / "projects" / project_name).expanduser().resolve()
     local_jobs_root = local_project_root / "jobs"
     local_jobs_root.mkdir(parents=True, exist_ok=True)
